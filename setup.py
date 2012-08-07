@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 import os
 
-from geohex3 import __version__ as VERSION
+from geohex import __version__ as VERSION
 
 long_description = open("README.rst").read()
 
-setup(name="geohex3",
+setup(name="geohex",
     version=VERSION,
     description="GEOHEX V3 Library",
     long_description=long_description,

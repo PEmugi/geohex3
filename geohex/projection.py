@@ -14,3 +14,9 @@ def deg2meter(lon, lat):
 
     return x, y
     
+
+def meter2deg(x, y):
+    lon = (x / HALF_EL) * 180.0
+    lat = math.degrees(2 * math.atan(math.exp(math.radians(y / (HALF_EL) * 180))) - math.pi / 2)  
+
+    return lon, lat
