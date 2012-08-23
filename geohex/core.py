@@ -11,8 +11,11 @@ HEX_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 class Zone(object):
     """Hex Zone"""
 
-    def __init__(self, hex_x_no, hex_y_no, level):
-        self._code = encode(hex_x_no, hex_y_no, level)
+    def __init__(self, level, hex_x_no, hex_y_no):
+        self._code = encode(level, hex_x_no, hex_y_no)
+        self._hex_x_no = hex_x_no
+        self._hex_y_no = hex_y_no
+        self._level = level
 
     
     def get_parent(self):
@@ -21,8 +24,16 @@ class Zone(object):
     def get_children(self):
         pass
 
-    def get_neibhor:w
+    def get_neibhor(self):
+        pass
 
+
+def create_zone(level, lon, lat):
+    return Zone(level, *deg2hex(level, lon, lat))
+
+
+def create_zone_by_code(hexcode):
+    return Zone(*decode(hexcode))
 
 
 def deg2hex(level, lon, lat):
