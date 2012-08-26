@@ -18,13 +18,42 @@ class Zone(object):
         self._level = level
 
     
+    @property
+    def code(self):
+        return self._code
+    
+    @property
+    def hex_x_no(self):
+        return self._hex_x_no
+
+    @property
+    def hex_y_no(self):
+        return self._hex_y_no
+
+    @property
+    def level(self):
+        return self._level
+
     def get_parent(self):
-        pass
+        return create_zone_by_code(self._code[:-1])
 
     def get_children(self):
-        pass
+        return [create_zone_by_code(self._code + c) for c in "012345678"]
 
     def get_neibhor(self):
+        result = []
+        for x in (-1, 0, 1):
+            for y in (-1, 0, 1):
+                z = Zone(self._level, self._hex_x_no + x, self._hex_y_no + y)
+                result.append(z)
+        return result
+
+
+
+    def get_distance(self, another):
+        pass
+
+    def get_movable_zone(self, distance):
         pass
 
 
