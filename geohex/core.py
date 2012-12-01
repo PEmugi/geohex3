@@ -3,7 +3,7 @@
 from .projection import *
 import math
 
-__all__ = ["deg2hex", "encode", "decode"]
+__all__ = ["create_zone", "create_zone_by_code", "meter2hex", "hex2deg", "hex2meter", "deg2hex", "encode", "decode"]
 
 HEX_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
