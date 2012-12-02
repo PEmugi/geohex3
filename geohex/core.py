@@ -101,6 +101,9 @@ class Zone(object):
 
     def get_wkt(self):
         return WKB_TMPL.format(*reduce(lambda a, b: a+b, self.get_vertices()))
+    
+    def get_wkt_deg(self):
+        return WKB_TMPL.format(*reduce(lambda a, b: a+b, self.get_vertices_deg()))
         
 
 

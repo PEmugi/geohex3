@@ -12,8 +12,6 @@ except:
 
 
 
-
-
 def gen_hex():
 
     parser = argparse.ArgumentParser()
@@ -23,6 +21,7 @@ def gen_hex():
     parser.add_argument("-c", "--center", nargs=2, type=float, default=None, metavar=("x", "y"))
     parser.add_argument("-d", "--distance", type=int, default=0)
     parser.add_argument("-of", "--outputformat", type=str, default="ESRI Shapefile")
+    parser.add_argument("-u", "--unit", type=str, default="m", metavar="m|d")
     args = parser.parse_args()
 
     outputname = args.output
@@ -31,7 +30,10 @@ def gen_hex():
     drv = ogr.GetDriverByName(args.outputformat)
 
     srs = osr.SpatialReference()
-    srs.ImportFromProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs")
+    if args.unit == "m":
+        srs.ImportFromProj4("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs")
+    else:
+        srs.ImportFromEPSG(4326)
 
     ds = drv.CreateDataSource(outputname)
     lyr = ds.CreateLayer(os.path.basename(outputname).replace(".shp", ""), srs, 3)
@@ -67,7 +69,10 @@ def gen_hex():
     f_defn.AddFieldDefn(code_defn)
     for zone in zones:
         f = ogr.Feature(f_defn)
-        geom = ogr.CreateGeometryFromWkt(zone.get_wkt())
+        if args.unit == "m":
+            geom = ogr.CreateGeometryFromWkt(zone.get_wkt())
+        else:
+            geom = ogr.CreateGeometryFromWkt(zone.get_wkt_deg())
         #geom.AssignSpatialReference(srs)
         f.SetGeometry(geom)
         f.SetField("x", zone.hex_x_no)
