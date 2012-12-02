@@ -3,9 +3,11 @@
 from .projection import *
 import math
 
-__all__ = ["create_zone", "create_zone_by_code", "meter2hex", "hex2deg", "hex2meter", "deg2hex", "encode", "decode"]
+__all__ = ["create_zone", "create_zone_by_code", "meter2hex", "hex2deg", "hex2meter", "deg2hex", "encode", "decode", "create_zones_by_extent"]
 
 HEX_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+WKB_TMPL = "POLYGON(({0} {1}, {2} {3}, {4} {5}, {6} {7}, {8} {9}, {10} {11}, {0} {1}))"
 
 
 class Zone(object):
@@ -41,7 +43,7 @@ class Zone(object):
     def get_children(self):
         return [create_zone_by_code(self._code + c) for c in "012345678"]
 
-    def get_movable_zone(self, distance):
+    def get_movable_zones(self, distance):
 
         result = []
         for delta_y in range(-distance, distance + 1):
@@ -53,7 +55,12 @@ class Zone(object):
 
         return result
 
+    def __eq__(self, other):
+        return other.code == self._code
 
+    def __hash__(self):
+        return hash(self._code)
+        
 
     def get_distance(self, other):
         if self._level != other.level:
@@ -90,7 +97,11 @@ class Zone(object):
                 (h_cl, h_btm))
 
     def get_vertices_deg(self):
-        return (meter2deg(m[0], m[1]) for m in self.get_vertex())
+        return tuple(meter2deg(m[0], m[1]) for m in self.get_vertices())
+
+    def get_wkt(self):
+        return WKB_TMPL.format(*reduce(lambda a, b: a+b, self.get_vertices()))
+        
 
 
 def create_zone(level, lon, lat):
@@ -150,7 +161,7 @@ def meter2hex(level, x, y):
         hex_x_no = hex_y_no
         hex_y_no = tmp_x_no
 
-    return hex_x_no, hex_y_no 
+    return int(hex_x_no), int(hex_y_no)
 
 
 def hex2deg(level, hex_x, hex_y):
@@ -243,8 +254,59 @@ def decode(code):
 
     return level, int(hex_x_no), int(hex_y_no)
 
+
+def create_zones_by_extent(level, minx, miny, maxx, maxy):
+    """ """
+    
+    ll_zone = create_zone(level, minx, miny)
+    lr_zone = create_zone(level, maxx, miny)
+    ul_zone = create_zone(level, minx, maxy)
+    ur_zone = create_zone(level, maxx, maxy)
+
+    #if ll_zone.hex_x_no + ll_zone.hex_y_no > lr_zone.hex_x_no + lr_zone.hex_y_no:
+    #    lr_zone = Zone(level, lr_zone.hex_x_no + 1, lr_zone.hex_y_no)
+    #elif ll_zone.hex_x_no + ll_zone.hex_y_no < lr_zone.hex_x_no + lr_zone.hex_y_no:
+    #    lr_zone = Zone(level, lr_zone.hex_x_no , lr_zone.hex_y_no -1)
+    #if ul_zone.hex_x_no + ul_zone.hex_y_no < ur_zone.hex_x_no + ur_zone.hex_y_no:
+    #    ur_zone = Zone(level, ur_zone.hex_x_no + 1, ur_zone.hex_y_no)
+    #elif ul_zone.hex_x_no + ul_zone.hex_y_no < ur_zone.hex_x_no + ur_zone.hex_y_no:
+    #    ur_zone = Zone(level, ur_zone.hex_x_no , ur_zone.hex_y_no -1)
+    to_remove = set()
+    to_remove.add(Zone(level, ll_zone.hex_x_no - 1, ll_zone.hex_y_no))
+    to_remove.add(Zone(level, lr_zone.hex_x_no, lr_zone.hex_y_no - 1))
+    to_remove.add(Zone(level, ul_zone.hex_x_no, ul_zone.hex_y_no + 1))
+    to_remove.add(Zone(level, ur_zone.hex_x_no + 1, ur_zone.hex_y_no))
+
+    result = set()
+    width = lr_zone.get_distance(ll_zone)
+    height = ul_zone.get_distance(ll_zone)
+
+    for i in range(0, width // 2 + 1):
+        base1 = Zone(level, ll_zone.hex_x_no + i, ll_zone.hex_y_no - i)
+        #result.append(base1)
+        for j in range(0, height + 1):
+            result.add(Zone(level, base1.hex_x_no + j, base1.hex_y_no + j))
+        if base1.code != lr_zone.code:
+            ##base2 = Zone(level, base1.hex_x_no, base1.hex_y_no -1)
+            base2 = Zone(level, base1.hex_x_no + 1, base1.hex_y_no)
+            #result.append(base2)
+            ##for k in range(0, height + 2):
+            ##    result.append(Zone(level, base2.hex_x_no + k, base2.hex_y_no + k))
+            for k in range(0, height ):
+                result.add(Zone(level, base2.hex_x_no + k, base2.hex_y_no + k))
+            
+    if ll_zone.get_vertices_deg()[0][1] > miny:
+        for i in range(0, width // 2 + 1):
+            result.add(Zone(level, ll_zone.hex_x_no + i, ll_zone.hex_y_no - 1 -i))
+    if ul_zone.get_vertices_deg()[0][1] < maxy:
+        for i in range(0, width // 2 + 1):
+            result.add(Zone(level, ul_zone.hex_x_no + 1 + i, ul_zone.hex_y_no - i))
+    if ll_zone.get_vertices_deg()[1][0] > minx:
+        for i in range(0, height):
+            result.add(Zone(level, ll_zone.hex_x_no + i, ll_zone.hex_y_no + 1 + i))
+    if lr_zone.get_vertices_deg()[2][0] < maxx:
+        for i in range(0, height):
+            result.add(Zone(level, lr_zone.hex_x_no + 1 + i, lr_zone.hex_y_no + i))
+    return result - to_remove
             
 
-
-
-        

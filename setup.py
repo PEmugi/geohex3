@@ -5,6 +5,12 @@ from geohex import __version__ as VERSION
 
 long_description = open("README.rst").read()
 
+entry_points = {
+    'console_scripts': [
+        'gen_hex = geohex.tools:gen_hex'
+        ]
+        }
+
 setup(name="geohex",
     version=VERSION,
     description="GEOHEX V3 Library",
@@ -16,5 +22,6 @@ setup(name="geohex",
     packages=find_packages(exclude=["ez_setup"]),
     install_requires=["setuptools"],
     tests_require=["nose"],
-    test_suite = "nose.collector"
+    test_suite = "nose.collector",
+    entry_points = entry_points
     )
