@@ -4,8 +4,8 @@ import math
 # HEX_LEN = length of one side of Hex.
 #               ( HALF_EL / 27) * 2
 ##
-HALF_EL = 20037408.34
-HEX_LEN = 1484252.4696296295 
+HALF_EL = 20037508.34
+HEX_LEN = 1484259.877037037
 
 def deg2meter(lon, lat):
     x = lon * HALF_EL / 180.0

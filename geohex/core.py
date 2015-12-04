@@ -176,15 +176,8 @@ def hex2meter(level, hex_x, hex_y):
     """hex xy to meter"""
 
     h_len  = HEX_LEN / math.pow(3, level)
-
-    # h_base = 3 * h_len / sqrt(3)
-    h_base = h_len * math.sqrt(3)
-
-    hx = hex_x * h_base
-    hy = hex_y * h_base
-    
-    y = (hx + hy) / 2
-    x = (hx - hy) * (math.sqrt(3) / 2)
+    y = (hex_x + hex_y) * h_len * math.sqrt(3) / 2.0
+    x = (hex_x - hex_y) * h_len * 3.0 / 2.0
 
     return x, y
     
